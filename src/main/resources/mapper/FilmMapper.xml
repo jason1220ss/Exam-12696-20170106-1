@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jason.mapper.FilmMapper">
+    <resultMap id="FilmMapper" type="com.jason.dto.Film">
+        <id column="film_id" property="filmId"></id>
+        <result column="title" property="title"></result>
+        <result column="description" property="description"></result>
+        <result column="language_id" property="languageId"></result>
+        <association property="language" javaType="Language">
+            <id column="language_id" property="languageId"></id>
+            <result column="name" property="name"></result>
+        </association>
+    </resultMap>
+
+    <select id="select" resultMap="FilmMapper" parameterType="com.jason.dto.Page">
+        select * from film f left join `language` l on f.language_id = l.language_id
+        where 1=1
+        <if test="t.title != null">
+            and title like CONCAT('%', CONCAT(#{t.title}, '%'))
+        </if>
+        limit #{start}, #{pageSize}
+    </select>
+    <select id="selectCount" resultType="int" parameterType="com.jason.dto.Film">
+        select count(*) from film
+        where 1=1
+        <if test="title != null">
+            and title like CONCAT('%', CONCAT(#{title}, '%'))
+        </if>
+    </select>
+    <select id="selectById" resultMap="FilmMapper" parameterType="int">
+        select * from film f left join `language` l on f.language_id = l.language_id where f.film_id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.jason.dto.Film" useGeneratedKeys="true" keyProperty="filmId">
+        insert into film(film_id, title, description, language_id) VALUES (#{filmId}, #{title}, #{description}, #{languageId})
+    </insert>
+
+    <delete id="delete" parameterType="int">
+
+        delete from film where film_id = #{filmId}
+    </delete>
+
+    <update id="update" parameterType="com.jason.dto.Film">
+        update film SET
+        <if test="title != null">
+            title = #{title},
+        </if>
+        description = #{description}
+        where film_id = #{filmId}
+    </update>
+</mapper>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="form-group col-sm-3"></div>
+    <form action="/addFilm" class="form-group col-sm-6">
+        <table class="table">
+            <thead>
+                <tr>
+                    <td colspan="2" align="center">
+                        <h2 style="color: darkslateblue">新增</h2>
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <label for="title" class="control-label">电影名:</label>
+                    </td>
+                    <td>
+                        <div class="col-sm-8">
+                            <input type="text" name="title" class="form-control" id="title" placeholder="请输入电影名">
+                            <div id="title1" style="display: none; color: red">
+                                电影名不能为空
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td>
+                        <label for="description" class="control-label">电影描述:</label>
+                    </td>
+                    <td>
+                        <div class="col-sm-8">
+                            <input type="text" name="description" class="form-control" id="description" placeholder="请输入电影描述">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="languageId" class="control-label">电影语言:</label>
+                    </td>
+                    <td>
+                        <div class="col-sm-8">
+                        <select id="languageId" name="languageId">
+
+                        </select>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" align="center">
+                        <button class="btn btn-default"><a href="/show.html">返回</a></button>
+
+                        <input type="submit" value="新增">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+    <script type="text/javascript">
+
+        $(function () {
+
+            $.ajax({
+                type:"GET",
+                url:"/addUI",
+                dataType:"json",
+                success:function(data){
+                    for(var item of data.rows) {
+                        $("#languageId").append("<option value='"+item.languageId+"'>"+item.name+"</option>");
+                    }
+                }
+            });
+
+            //判断电影名不能为空
+            $("#title").blur(function () {
+                var title = $("#title").val();
+                if(title == "") {
+                    $("#title1").css("display","block");
+                    $("#title").focus();
+                }
+                if(title != "") {
+                    $("#title1").css("display","none");
+                }
+            })
+
+            $("form").submit(function () {
+                var title = $("#title").val();
+                if (title == "") {
+                    $("#title1").css("display", "block");
+                    $("#title").focus();
+                    return false;
+                }
+                return true;
+            })
+        })
+    </script>
+</body>

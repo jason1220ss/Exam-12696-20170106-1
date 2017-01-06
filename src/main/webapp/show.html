@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <!--条件查询-->
+    <div class="container" style="margin-left: 20px; margin-right: 20px; margin-top: 20px">
+        <div>
+            <div class="form-horizontal" role="form">
+                <div class="form-group col-sm-6">
+                    <label for="title" class="col-sm-4 control-label">
+                        电影名:</label>
+                    <div class="col-sm-8">
+                        <input type="text" name="title" class="form-control" id="title" placeholder="请输入电影名">
+                    </div>
+                </div>
+
+                <div class="form-group col-sm-4">
+                    <div class="col-sm-offset-2 col-sm-10 col-sm-pull-1 text-right">
+                        <button id="query" class="btn btn-info">查询</button>
+
+                        <button id="add" class="btn btn-info"><a href="/add.html">新增</a></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--显示数据-->
+    <div>
+        <table style="margin-left: 20px; margin-right: 40px; margin-top: 20px" id="filmTable" class="table table-striped">
+            <thead>
+                <th>电影ID</th>
+                <th>电影名</th>
+                <th>电影描述</th>
+                <th>语言</th>
+                <th>操作</th>
+            </thead>
+
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+    <!--分页-->
+    <div style="margin-left: 40px; margin-right: 40px; margin-top: 20px">
+        <ul id="page" class="pagination col-sm-8" style="margin: 0px">
+            <li><a href="#">&lt;&lt;</a></li>
+            <li><a href="#">&gt;&gt;</a></li>
+        </ul>
+
+        <!--每页显示最大记录数-->
+        <div class="col-sm-1">
+            <select id="pageSize" class="form-control">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <!--直接跳转到指定页数-->
+        <div class="col-sm-1">
+            <input id="currentPage" type="number" min="1" class="form-control">
+        </div>
+        <button id="go" class="btn btn-primary">跳转</button>
+    </div>
+
+    <script id="rowData" type="application/html">
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </script>
+
+    <script>
+        $('document').ready(function () {
+            window.page = {
+                currentPage : 1,  //当前页
+                pageSize : Number($("#pageSize").val()),    //每页显示的最大数据数
+                totalCount : 0,        //总的数据数
+                totalPage : 0     //总的页数
+            };
+            //查询
+            query(page);
+            $("#query").click(function () {
+                query({
+                    title:$("#title").val()
+                });
+            });
+
+            //跳转到首页
+            $("#page").children("li:first").click(function () {
+                window.page.currentPage = 1;
+//                console.log(window.page);
+                query(window.page);
+            });
+
+            //跳转到尾页
+            $("#page").children("li:last").click(function () {
+                window.page.currentPage = window.page.totalPage;
+//                console.log(window.page);
+                query(window.page);
+            });
+
+            //改变每页显示最大数据数
+            $("#pageSize").change(function () {
+                window.page.currentPage = 1;
+                window.page.pageSize = Number($("#pageSize").val());
+//                console.log(window.page);
+                query(window.page);
+            });
+
+            //跳转到指定页数
+            $("#go").click(function () {
+                window.page.currentPage = Number($("#currentPage").val());
+//                console.log(window.page);
+                query(window.page);
+
+            });
+
+        });
+
+        //重新设置分页信息
+        function resetPage(page) {
+            window.page.currentPage = page.currentPage;
+            window.page.pageSize = page.pageSize;
+            window.page.totalCount = page.totalCount;
+            window.page.totalPage = Math.ceil(page.totalCount/window.page.pageSize);
+        }
+
+        function range(min, max) {
+            var array = [];
+            for(var i = min; i <= max; i++) {
+                array.push(i);
+            }
+            return array;
+        }
+
+        function refreshPage() {
+            $("#page").children("li.page").remove();
+            var pages = [];
+            if(window.page.totalPage - window.page.currentPage < 2) {
+                pages = range(Math.max(1,window.page.totalPage-4), window.page.totalPage);
+            } else if(window.page.currentPage - 1 < 2) {
+                pages= range(1, Math.min(window.page.totalPage, 5));
+            } else {
+                pages = range(Number(window.page.currentPage)-2, Number(window.page.currentPage)+2);
+            }
+            var temp = "<li class='page'><a href='#'></a></li>";
+            for(var item of pages) {
+                var last = $("#page").children("li:last");
+                var tempt = $(temp);
+                tempt.children("a").text(item);
+                if(item == window.page.currentPage) {
+                    tempt.addClass("active");
+                }
+                last.before(tempt);
+            }
+            $("#page").children("li:first").removeClass("disabled");
+            $("#page").children("li:last").removeClass("disabled");
+            if(window.page.currentPage == 1) {
+                $("#page").children("li:first").addClass("disabled");
+            }
+            if(window.page.currentPage == page.totalPage) {
+                $("#page").children("li:last").addClass("disabled");
+            }
+
+            $("#page li.page").click(function (event) {
+//                console.log(event);
+                window.page.currentPage = Number($(event.target).text());
+                query(window.page);
+            })
+
+
+        }
+
+
+
+        //查询数据（分页）
+        function query(pageData) {
+            //页面输入的查询参数
+            pageData.title = $("#title").val();
+//            console.log(pageData.title);
+            //后台传的参数
+            var pageInfo = {
+                title:"",
+                currentPage:1,
+                pageSize:10
+            }
+            //扩展
+            pageData = $.extend({}, pageInfo, pageData);
+
+            $.ajax({
+                url:"/select",
+                dataType:"json",
+                type:"GET",
+                data:pageData,
+                success:function (data) {
+                    //总数据数量
+                    pageData.totalCount = data.totalCount;
+                    resetPage(pageData);
+
+                    //清空数据
+                    $("#filmTable tbody").empty();
+                    //循环显示数据
+                    for(var item of data.rows) {
+                        var rowData = $($("#rowData").html()).clone();
+                        rowData.children("td").eq(0).text(item.filmId);
+                        rowData.children("td").eq(1).text(item.title);
+                        rowData.children("td").eq(2).text(item.description);
+                        rowData.children("td").eq(3).text(item.language.name);
+
+                        var update = $("<button class='btn btn-default btn-sm'></button>");
+                        var deletes = $("<button id='deletes' class='btn btn-danger btn-sm'>删除</button>");
+                        var a = $("<a>编辑</a>");
+                        a.attr("href", "/update.html?filmId="+item.filmId);
+                        deletes.attr("lang", item.filmId);
+                        update.append(a);
+                        rowData.children("td").eq(4).append(update);
+                        rowData.children("td").eq(4).append(deletes);
+                        //将数据添加到table中
+                        $("#filmTable").append(rowData);
+
+                        $(deletes).click(function () {
+                            if(confirm("确定要删除这条记录吗？")) {
+                                var filmId = this.lang;
+//                                console.log(filmId);
+                                //清空数据
+                                $("#filmTable tbody").empty();
+
+                                var sendData = {
+                                    "filmId" : filmId,
+                                };
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: "/delete",
+                                    data:sendData,
+                                    success: function (data)
+                                    {
+                                        alert("删除成功！");
+                                        query(pageData);
+                                        console.log(filmId);
+                                    },
+                                    error: function (data)
+                                    {
+                                        alert("删除失败！");
+                                        query(pageData);
+                                    }
+                                });
+                            }
+                        })
+                    }
+                    $("#currentPage").attr("max", window.page.totalPage);
+                    $("#currentPage").val(pageData.currentPage);
+                    refreshPage();
+                }
+            })
+
+        }
+
+    </script>
+
+
+
+
+</body>

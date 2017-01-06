@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+
+        xsi:schemaLocation="
+
+	  http://www.springframework.org/schema/beans
+	  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+
+	  http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.0.xsd
+
+	  http://www.springframework.org/schema/aop
+	  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+
+	  http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+
+      ">
+    <!-- 配置数据源 -->
+    <context:property-placeholder location="classpath:db.properties"></context:property-placeholder>
+    <bean id="comboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${mysql.driver}"/>
+        <property name="jdbcUrl" value="${mysql.url}"/>
+        <property name="user" value="${mysql.username}"/>
+        <property name="password" value="${mysql.password}"/>
+    </bean>
+
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="comboPooledDataSource"></property>
+        <property name="mapperLocations" value="classpath:mapper/*Mapper.xml"/>
+        <property name="typeAliasesPackage" value="com.jason.dto"/>
+    </bean>
+
+    <!-- 配置事务管理器，因为mybatis底层用的jdbc事务管理器，即我们这里只需配置jdbc事务管理器 -->
+    <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="comboPooledDataSource"/>
+    </bean>
+
+    <!-- 组件扫描 -->
+    <context:component-scan base-package="com.jason"/>
+    <!-- Mapper扫描配置 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jason.mapper" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean" />
+    </bean>
+
+    <!-- 配置事务通知：即哪些方法需要事务支持 -->
+    <tx:advice id="tx" transaction-manager="dataSourceTransactionManager">
+        <tx:attributes>
+            <!--以这些方法开头的必须要事务支持-->
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+
+            <!-- 其他方法需不需要事务支持看实现代码，代码中有就需要 -->
+            <tx:method name="*" propagation="SUPPORTS"/>
+        </tx:attributes>
+    </tx:advice>
+
+
+    <!-- 配置切面：即哪些包下的哪些类需要事务 -->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.jason.service.impl.*.*(..))"/>
+        <aop:advisor advice-ref="tx" pointcut-ref="pointcut"></aop:advisor>
+    </aop:config>
+</beans>

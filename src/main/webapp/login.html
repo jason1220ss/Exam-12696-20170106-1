@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-group col-sm-3"></div>
+        <form action="/loginFilm" class="form-group col-sm-6">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td colspan="2" align="center">
+                            <h2 style="color: darkslateblue">登录</h2>
+                        </td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <label for="firstName" class="control-label">用户名：</label>
+                    </td>
+                    <td>
+                        <div class="col-sm-8">
+                            <input type="text" name="firstName" class="form-control" id="firstName">
+                            <div id="firstName1" style="display: none; color: red">
+                                用户名不能为空
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <input type="submit" id="login" value="登录" />
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </form>
+
+        <script>
+            $('document').ready(function () {
+                //判断用户名不能为空
+                $("#firstName").blur(function () {
+                    var firstName = $("#firstName").val();
+                    if(firstName == "") {
+                        $("#firstName1").css("display","block");
+                        $("#firstName").focus();
+                    }
+                    if(firstName != "") {
+                        $("#firstName1").css("display","none");
+                    }
+                })
+
+                $("form").submit(function () {
+                    var firstName = $("#firstName").val();
+//                    $.ajax({
+//                        type:"GET",
+//                        url:"/loginFilm",
+//                        dataType:"text",
+//                        data: {firstName},
+//
+//                        success:function(message){
+//                            alert(message);
+//                            if(message == "/show.html") {
+//                                window.location.href = message;
+//                            }
+//                            if(message == "/login.html") {
+//                                alert("登录失败！");
+//                                window.location.href = message;
+//                            }
+//                        }
+//                    });
+
+//                    var firstName = $("#firstName").val();
+                    if (firstName == "") {
+                        $("#firstName1").css("display", "block");
+                        $("#firstName").focus();
+                        return false;
+                    }
+
+                    return true;
+                });
+            })
+        </script>
+    </div>
+</body>
